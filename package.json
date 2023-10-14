@@ -1,0 +1,18 @@
+{
+  "name": "lilith-reports",
+  "version": "1.0.0",
+  "description": "Reports generation engine that use carbon.io to generate dynamic templates",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "type": "module",
+  "author": "Marc Gurt",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.20.2",
+    "carbone": "^3.5.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2"
+  }
+}
