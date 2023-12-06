@@ -2,13 +2,13 @@ import express from "express";
 import bodyParser from "body-parser";
 import dotenv from "dotenv";
 import fs from "fs";
+import { generateReport, parseTemplate } from "./report.js";
 
 const app = express();
 dotenv.config();
 
 app.use(bodyParser.json());
 
-import { generateReport, parseTemplate } from "./report.js";
 app.post("/generate-report", (req, res) => {
   generateReport(req.body.data, req.body.report, req.body.fileName, res);
 });

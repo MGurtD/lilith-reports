@@ -31,7 +31,7 @@ export function generateReport(data, report, fileName, response) {
   // This LibreOffice template contains "Hello {d.firstname} {d.lastname} !"
   // Of course, you can create your own templates!
   carbone.render(
-    `./templates/${report}.odt`,
+    `${process.env.TEMPLATES_PATH}/${report}.odt`,
     data,
     options,
     function (err, result) {
