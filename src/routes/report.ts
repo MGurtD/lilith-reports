@@ -5,7 +5,7 @@ import { Response } from "express";
 export function parseTemplate(
   data: any,
   templateName: string,
-  downloadedFileName: string,
+  fileName: string,
   response: Response
 ) {
   const templatePath = `${process.env.TEMPLATES_PATH}/${templateName}.docx`;
@@ -33,7 +33,7 @@ export function parseTemplate(
 
   // Generate a report using the sample template provided by carbone module
   // Of course, you can create your own templates!
-  carbone.render(data, options, function (err, result) {
+  carbone.render(templatePath, data, options, function (err, result) {
     if (err) {
       return console.log(err);
     }
@@ -42,9 +42,9 @@ export function parseTemplate(
     fs.writeFileSync(templatePath, result);
 
     // download it
-    const fileName = downloadedFileName.endsWith(".docx")
-      ? downloadedFileName
-      : `${downloadedFileName}.docx`;
-    response.download(templatePath, fileName);
+    const downloadedFileName = fileName.endsWith(".docx")
+      ? fileName
+      : `${fileName}.docx`;
+    response.download(templatePath, downloadedFileName);
   });
 }
