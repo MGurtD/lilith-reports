@@ -1,18 +1,28 @@
 {
-  "name": "lilith-reports",
+  "name": "test-node-docker",
   "version": "1.0.0",
-  "description": "Reports generation engine that use carbon.io to generate dynamic templates",
-  "main": "index.js",
+  "description": "",
+  "main": "src/App.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "nodemon",
+    "start": "node build/app.js",
+    "build": "tsc --project ./"
   },
-  "type": "module",
-  "author": "Marc Gurt",
+  "keywords": [],
+  "author": "",
   "license": "ISC",
   "dependencies": {
     "body-parser": "^1.20.2",
     "carbone": "^3.5.5",
     "dotenv": "^16.3.1",
     "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "@types/carbone": "^3.2.5",
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.10.4",
+    "nodemon": "^3.0.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
   }
 }
