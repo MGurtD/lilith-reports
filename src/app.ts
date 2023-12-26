@@ -1,13 +1,15 @@
 import express, { Request, Response } from "express";
 import bodyParser from "body-parser";
-import { parseTemplate } from "./routes/report";
+import cors from "cors";
+import { parseTemplateAndDownload } from "./routes/report";
 import dotenv from "dotenv";
 
 dotenv.config();
 
 const app = express();
 app.use(bodyParser.json());
-app.post("/parse-template", (req: Request, res: Response) => {
+app.use(cors());
+app.post("/download", (req: Request, res: Response) => {
   let { reportName, fileName, data } = req.body;
 
   if (!data || data === "") {
@@ -23,7 +25,7 @@ app.post("/parse-template", (req: Request, res: Response) => {
     return;
   }
 
-  parseTemplate(data, reportName, fileName, res);
+  parseTemplateAndDownload(data, reportName, fileName, res);
 });
 
 app.get("/health", (req: Request, res: Response) => {
