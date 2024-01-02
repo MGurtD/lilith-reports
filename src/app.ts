@@ -31,7 +31,7 @@ app.get("/health", (req: Request, res: Response) => {
   res.status(200).end();
 });
 
-const port = process.env.PORT ?? 9000;
+const port = process.env.PORT ?? 9001;
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
