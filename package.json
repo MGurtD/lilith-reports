@@ -9,10 +9,9 @@
     "build": "tsc --project ./"
   },
   "keywords": [],
-  "author": "",
+  "author": "Marc Gurt Dot",
   "license": "ISC",
   "dependencies": {
-    "body-parser": "^1.20.2",
     "carbone": "^3.5.5",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",

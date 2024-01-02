@@ -1,5 +1,4 @@
 import express, { Request, Response } from "express";
-import bodyParser from "body-parser";
 import cors from "cors";
 import { parseTemplateAndDownload } from "./routes/report";
 import dotenv from "dotenv";
@@ -7,7 +6,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const app = express();
-app.use(bodyParser.json());
+app.use(express.json({ limit: "200mb" }));
 app.use(cors());
 app.post("/download", (req: Request, res: Response) => {
   let { reportName, fileName, data } = req.body;
