@@ -9,7 +9,7 @@ export function parseTemplateAndDownload(
   response: Response
 ) {
   try {
-    const templatePath = `${process.env.TEMPLATES_PATH}/${templateName}.docx`;
+    const templatePath = `${process.env.TEMPLATES_PATH}/${templateName}`;
     const downloadedFileName = fileName.endsWith(".docx")
       ? fileName
       : `${fileName}.docx`;
