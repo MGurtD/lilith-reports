@@ -47,6 +47,8 @@ export function parseTemplateAndDownload(
       fs.writeFileSync(outputPath, result);
 
       // download it
+      console.log("output path: ", outputPath);
+      console.log("downloadedFileName: ", downloadedFileName);
       response.download(outputPath, downloadedFileName);
     });
   } catch (err) {

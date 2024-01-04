@@ -20,7 +20,7 @@ app.post("/download", (req: Request, res: Response) => {
     return;
   }
   if (!fileName || fileName === "") {
-    res.status(400).send("'downloadedFileName' is not provided");
+    res.status(400).send("'fileName' is not provided");
     return;
   }
 
