@@ -33,7 +33,8 @@ export function parseTemplateAndDownload(
     }
 
     var options = {
-      convertTo: "docx", //can be docx, txt, ...
+      convertTo: "docx",
+      lang: "es-es",
     };
 
     // Generate a report using the sample template provided by carbone module
