@@ -1,6 +1,7 @@
 import fs from "fs";
 import carbone from "carbone";
 import { Response } from "express";
+import { DocxToPdfConverter } from "../tasks/DocxToPdfConverter";
 
 export function parseTemplateAndDownload(
   data: any,
@@ -46,11 +47,31 @@ export function parseTemplateAndDownload(
 
       // write the result
       fs.writeFileSync(outputPath, result);
+      console.log("carbone render output: ", outputPath);
+
+      // convert to pdf
+      const converter = new DocxToPdfConverter(
+        process.env.CLOUD_CONVERT_API_KEY,
+        outputPath,
+        outputPath.replace(".docx", ".pdf")
+      );
+
+      converter
+        .convert()
+        .then(() => {
+          console.log("PDF conversion completed.");
+
+          response.download(
+            outputPath.replace(".docx", ".pdf"),
+            downloadedFileName.replace(".docx", ".pdf")
+          );
+        })
+        .catch((error) => {
+          console.error("Error during PDF conversion:", error);
+        });
 
       // download it
-      console.log("output path: ", outputPath);
       console.log("downloadedFileName: ", downloadedFileName);
-      response.download(outputPath, downloadedFileName);
     });
   } catch (err) {
     response
