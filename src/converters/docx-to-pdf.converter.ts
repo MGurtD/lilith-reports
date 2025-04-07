@@ -19,7 +19,7 @@ interface TaskResult {
   };
 }
 
-export class DocxToPdfConverter {
+export default class DocxToPdfConverter {
   private cloudConvert: CloudConvert;
   private inputFile: string;
   private outputFile: string;
@@ -33,19 +33,19 @@ export class DocxToPdfConverter {
 
   public async convert(): Promise<void> {
     try {
-      console.log("🛠️  Creant la feina de conversió...");
+      console.log("🛠️  Creating conversion job...");
       const job = await this.createJob();
 
-      console.log("📤 Pujant l’arxiu...");
+      console.log("📤 Uploading file...");
       await this.uploadFile();
 
-      console.log("⏳ Esperant la finalització...");
+      console.log("⏳ Waiting for completion...");
       const completedJob = await this.cloudConvert.jobs.wait(job.id);
 
-      console.log("📥 Descarregant el PDF...");
+      console.log("📥 Downloading PDF...");
       await this.downloadFile(completedJob.tasks);
 
-      console.log(`✅ Conversió completada. Guardat a: ${this.outputFile}`);
+      console.log(`✅ Conversion completed. Saved to: ${this.outputFile}`);
     } catch (err: any) {
       console.error("❌ Error:", err.response?.data || err.message);
     }
@@ -76,7 +76,7 @@ export class DocxToPdfConverter {
 
   private async uploadFile(): Promise<void> {
     if (!this.uploadTask?.result?.form)
-      throw new Error("Upload task mal configurat.");
+      throw new Error("Upload task is misconfigured.");
 
     const { url, parameters } = this.uploadTask.result.form;
     const formData = new FormData();
@@ -98,8 +98,7 @@ export class DocxToPdfConverter {
     );
 
     const fileUrl = exportTask?.result?.files?.[0].url;
-    if (!fileUrl)
-      throw new Error("No s’ha pogut obtenir la URL del fitxer PDF.");
+    if (!fileUrl) throw new Error("Unable to retrieve the PDF file URL.");
 
     const response = await axios.get(fileUrl, { responseType: "stream" });
     const writer = fs.createWriteStream(this.outputFile);

@@ -1,9 +1,7 @@
 import express, { Request, Response } from "express";
 import cors from "cors";
 import { parseTemplateAndDownload } from "./routes/report";
-import dotenv from "dotenv";
-
-dotenv.config();
+import { env } from "./utils/env";
 
 const app = express();
 app.use(express.json({ limit: "200mb" }));
@@ -31,7 +29,7 @@ app.get("/health", (req: Request, res: Response) => {
   res.status(200).end();
 });
 
-const port = process.env.PORT ?? 9001;
+const port = env.PORT;
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });

@@ -1,7 +1,8 @@
 import fs from "fs";
 import carbone from "carbone";
 import { Response } from "express";
-import { DocxToPdfConverter } from "../tasks/DocxToPdfConverter";
+import DocxToPdfConverter from "../converters/docx-to-pdf.converter";
+import { env } from "../utils/env";
 
 export function parseTemplateAndDownload(
   data: any,
@@ -10,7 +11,7 @@ export function parseTemplateAndDownload(
   response: Response
 ) {
   try {
-    const templatePath = `${process.env.TEMPLATES_PATH}/${templateName}`;
+    const templatePath = `${env.TEMPLATES_PATH}/${templateName}`;
     const downloadedFileName = fileName.endsWith(".docx")
       ? fileName
       : `${fileName}.docx`;
@@ -50,28 +51,30 @@ export function parseTemplateAndDownload(
       console.log("carbone render output: ", outputPath);
 
       // convert to pdf
-      const converter = new DocxToPdfConverter(
-        process.env.CLOUD_CONVERT_API_KEY,
-        outputPath,
-        outputPath.replace(".docx", ".pdf")
-      );
 
-      converter
-        .convert()
-        .then(() => {
-          console.log("PDF conversion completed.");
+      if (env.CONVERT_TO_PDF) {
+        const converter = new DocxToPdfConverter(
+          env.CLOUD_CONVERT_API_KEY,
+          outputPath,
+          outputPath.replace(".docx", ".pdf")
+        );
 
-          response.download(
-            outputPath.replace(".docx", ".pdf"),
-            downloadedFileName.replace(".docx", ".pdf")
-          );
-        })
-        .catch((error) => {
-          console.error("Error during PDF conversion:", error);
-        });
-
-      // download it
-      console.log("downloadedFileName: ", downloadedFileName);
+        converter
+          .convert()
+          .then(() => {
+            response.download(
+              outputPath.replace(".docx", ".pdf"),
+              downloadedFileName.replace(".docx", ".pdf")
+            );
+          })
+          .catch((error) => {
+            console.error("Error during PDF conversion:", error);
+          });
+      } else {
+        // download the docx file directly
+        response.download(outputPath, downloadedFileName);
+        console.log("DOCX file downloaded.", downloadedFileName);
+      }
     });
   } catch (err) {
     response
