@@ -1,13 +1,17 @@
 import express, { Request, Response } from "express";
 import cors from "cors";
-import { parseTemplateAndDownload } from "./routes/report";
+import { handleTemplateDownload } from "./routes/template-parser";
 import { env } from "./utils/env";
+
+// Import the cleanup job
+import "./jobs/cleanup-job";
 
 const app = express();
 app.use(express.json({ limit: "200mb" }));
 app.use(cors());
-app.post("/download", (req: Request, res: Response) => {
-  let { reportName, fileName, data } = req.body;
+
+app.post("/download", async (req: Request, res: Response) => {
+  const { reportName, fileName, data, format } = req.body;
 
   if (!data || data === "") {
     res.status(400).send("'data' is not provided");
@@ -22,7 +26,13 @@ app.post("/download", (req: Request, res: Response) => {
     return;
   }
 
-  parseTemplateAndDownload(data, reportName, fileName, res);
+  try {
+    // Delegate the logic to the template-parser
+    await handleTemplateDownload(data, reportName, fileName, format, res);
+  } catch (error) {
+    console.error("Error processing the request:", error);
+    res.status(500).send("An error occurred while processing the request.");
+  }
 });
 
 app.get("/health", (req: Request, res: Response) => {
