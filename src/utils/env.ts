@@ -15,6 +15,6 @@ const getEnvVar = (key: string, required = true): string => {
 
 export const env = {
   PORT: parseInt(getEnvVar("PORT"), 10),
-  TEMPLATES_PATH: getEnvVar("TEMPLATES_PATH"),
+  TEMPLATES_PATH: getEnvVar("TEMPLATES_PATH", false),
   CLOUD_CONVERT_API_KEY: getEnvVar("CLOUD_CONVERT_API_KEY", false),
 };
