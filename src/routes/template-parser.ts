@@ -1,8 +1,9 @@
-import fs from "fs";
-import carbone from "carbone";
 import { Response } from "express";
-import DocxToPdfConverter from "../converters/docx-to-pdf.converter";
 import { env } from "../utils/env";
+import { TemplateValidatorService } from "../services/template-validator.service";
+import { DocxGeneratorService } from "../services/docx-generator.service";
+import { QrProcessorService } from "../services/qr-processor.service";
+import { PdfConverterService } from "../services/pdf-converter.service";
 
 /**
  * Handles the template generation and file download process.
@@ -27,15 +28,20 @@ export async function handleTemplateDownload(
     const outputPath = `./reports/${downloadedFileName}`;
 
     // Validate the template file
-    validateTemplate(templatePath, response);
+    TemplateValidatorService.validate(templatePath);
 
     // Generate the DOCX file
-    await generateDocx(templatePath, data, outputPath);
+    await DocxGeneratorService.generate(templatePath, data, outputPath);
+
+    // Post-process for QR codes if qrCode field exists
+    if (data.qrCodeUrl && data.qrCodeUrl.trim() !== "") {
+      await QrProcessorService.process(outputPath, data.qrCodeUrl);
+    }
 
     // Convert to PDF if requested
     if (format && format.toLowerCase() === "pdf") {
       const pdfFilePath = outputPath.replace(".docx", ".pdf");
-      await convertToPdf(outputPath, pdfFilePath);
+      await PdfConverterService.convert(outputPath, pdfFilePath);
       response.download(
         pdfFilePath,
         downloadedFileName.replace(".docx", ".pdf")
@@ -45,85 +51,21 @@ export async function handleTemplateDownload(
       response.download(outputPath, downloadedFileName);
     }
   } catch (err) {
-    response
-      .status(500)
-      .end(`Exception captured during the template generation. ${err}`);
-  }
-}
+    console.error("Template processing error:", err);
 
-/**
- * Validates the template file.
- * @param templatePath - The path to the template file.
- * @param response - The Express response object.
- */
-function validateTemplate(templatePath: string, response: Response) {
-  if (!fs.existsSync(templatePath)) {
-    response
-      .status(404)
-      .end(`Unexisting file on template path. ${templatePath}`);
-    throw new Error("Template file not found.");
-  }
-
-  if (!templatePath.endsWith("docx") && !templatePath.endsWith("odt")) {
-    response
-      .status(400)
-      .end(
-        "Unsupported format. This service only supports DOCX and ODT formats for templates."
-      );
-    throw new Error("Unsupported template format.");
-  }
-}
-
-/**
- * Generates a DOCX file using the Carbone template engine.
- * @param templatePath - The path to the template file.
- * @param data - The data to populate the template.
- * @param outputPath - The path to save the generated DOCX file.
- */
-function generateDocx(
-  templatePath: string,
-  data: any,
-  outputPath: string
-): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const options = {
-      convertTo: "docx",
-      lang: "es-es",
-    };
-
-    carbone.render(templatePath, data, options, (err, result) => {
-      if (err) {
-        console.error("Error during DOCX generation:", err);
-        return reject(err);
+    // Centralized error handling
+    if (err instanceof Error) {
+      if (err.message.includes("Template file not found")) {
+        response.status(404).end(`Template not found: ${err.message}`);
+      } else if (err.message.includes("Unsupported template format")) {
+        response.status(400).end(`Unsupported format: ${err.message}`);
+      } else {
+        response.status(500).end(`Template generation failed: ${err.message}`);
       }
-
-      fs.writeFileSync(outputPath, result);
-      console.log("DOCX file generated:", outputPath);
-      resolve();
-    });
-  });
-}
-
-/**
- * Converts a DOCX file to PDF using the DocxToPdfConverter.
- * @param inputPath - The path to the input DOCX file.
- * @param outputPath - The path to save the converted PDF file.
- */
-async function convertToPdf(
-  inputPath: string,
-  outputPath: string
-): Promise<void> {
-  const converter = new DocxToPdfConverter(
-    env.CLOUD_CONVERT_API_KEY,
-    inputPath,
-    outputPath
-  );
-
-  try {
-    await converter.convert();
-    console.log("PDF file generated:", outputPath);
-  } catch (error) {
-    console.error("Error during PDF conversion:", error);
-    throw error;
+    } else {
+      response
+        .status(500)
+        .end(`Unexpected error during template generation: ${err}`);
+    }
   }
 }
