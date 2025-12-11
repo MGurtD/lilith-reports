@@ -14,10 +14,24 @@ export class TemplateValidatorService {
       throw new Error(`Template file not found: ${templatePath}`);
     }
 
-    if (!templatePath.endsWith("docx") && !templatePath.endsWith("odt")) {
+    const supportedExtensions = ["docx", "odt", "xls", "xlsx"];
+    const hasValidExtension = supportedExtensions.some((ext) =>
+      templatePath.endsWith(ext)
+    );
+
+    if (!hasValidExtension) {
       throw new Error(
-        "Unsupported template format. This service only supports DOCX and ODT formats."
+        "Unsupported template format. This service only supports DOCX, ODT, XLS, and XLSX formats."
       );
     }
+  }
+
+  /**
+   * Checks if the template is an Excel file.
+   * @param templatePath - The path to the template file.
+   * @returns True if the template is Excel format (.xls or .xlsx).
+   */
+  static isExcelTemplate(templatePath: string): boolean {
+    return templatePath.endsWith(".xls") || templatePath.endsWith(".xlsx");
   }
 }
