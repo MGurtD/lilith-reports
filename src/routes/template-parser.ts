@@ -2,6 +2,7 @@ import { Response } from "express";
 import { env } from "../utils/env";
 import { TemplateValidatorService } from "../services/template-validator.service";
 import { DocxGeneratorService } from "../services/docx-generator.service";
+import { ExcelGeneratorService } from "../services/excel-generator.service";
 import { QrProcessorService } from "../services/qr-processor.service";
 import { PdfConverterService } from "../services/pdf-converter.service";
 
@@ -22,24 +23,40 @@ export async function handleTemplateDownload(
 ) {
   try {
     const templatePath = `${env.TEMPLATES_PATH}/${templateName}`;
-    const downloadedFileName = fileName.endsWith(".docx")
-      ? fileName
-      : `${fileName}.docx`;
-    const outputPath = `./reports/${downloadedFileName}`;
 
     // Validate the template file
     TemplateValidatorService.validate(templatePath);
 
-    // Generate the DOCX file
-    await DocxGeneratorService.generate(templatePath, data, outputPath);
+    // Determine if this is an Excel template
+    const isExcel = TemplateValidatorService.isExcelTemplate(templatePath);
 
-    // Post-process for QR codes if qrCode field exists
-    if (data.qrCodeUrl && data.qrCodeUrl.trim() !== "") {
+    // Set appropriate file extension based on template type
+    let fileExtension: string;
+    if (isExcel) {
+      fileExtension = templatePath.endsWith(".xlsx") ? ".xlsx" : ".xls";
+    } else {
+      fileExtension = ".docx";
+    }
+
+    const downloadedFileName = fileName.endsWith(fileExtension)
+      ? fileName
+      : `${fileName}${fileExtension}`;
+    const outputPath = `./reports/${downloadedFileName}`;
+
+    // Generate the file using appropriate service
+    if (isExcel) {
+      await ExcelGeneratorService.generate(templatePath, data, outputPath);
+    } else {
+      await DocxGeneratorService.generate(templatePath, data, outputPath);
+    }
+
+    // Post-process for QR codes if qrCode field exists (only for DOCX)
+    if (!isExcel && data.qrCodeUrl && data.qrCodeUrl.trim() !== "") {
       await QrProcessorService.process(outputPath, data.qrCodeUrl);
     }
 
-    // Convert to PDF if requested
-    if (format && format.toLowerCase() === "pdf") {
+    // Convert to PDF if requested (only for DOCX)
+    if (!isExcel && format && format.toLowerCase() === "pdf") {
       const pdfFilePath = outputPath.replace(".docx", ".pdf");
       await PdfConverterService.convert(outputPath, pdfFilePath);
       response.download(
@@ -47,7 +64,7 @@ export async function handleTemplateDownload(
         downloadedFileName.replace(".docx", ".pdf")
       );
     } else {
-      // Send the DOCX file directly
+      // Send the file directly (DOCX or Excel)
       response.download(outputPath, downloadedFileName);
     }
   } catch (err) {
