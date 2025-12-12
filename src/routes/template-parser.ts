@@ -43,11 +43,25 @@ export async function handleTemplateDownload(
       : `${fileName}${fileExtension}`;
     const outputPath = `./reports/${downloadedFileName}`;
 
+    // Inject system timestamp into data (ISO 8601 format for Carbone compatibility)
+    const enrichedData = {
+      ...data,
+      now: new Date().toISOString(),
+    };
+
     // Generate the file using appropriate service
     if (isExcel) {
-      await ExcelGeneratorService.generate(templatePath, data, outputPath);
+      await ExcelGeneratorService.generate(
+        templatePath,
+        enrichedData,
+        outputPath
+      );
     } else {
-      await DocxGeneratorService.generate(templatePath, data, outputPath);
+      await DocxGeneratorService.generate(
+        templatePath,
+        enrichedData,
+        outputPath
+      );
     }
 
     // Post-process for QR codes if qrCode field exists (only for DOCX)
